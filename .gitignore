@@ -1,0 +1,13 @@
+# Developer Tools
+.env/
+venv/
+env/
+.venv/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build
+build/
+*.log
