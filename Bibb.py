@@ -4,9 +4,13 @@ import time
 #This is to designate different "tasks" or study topics. Defininately adding more variables and methods.
 class Event:
 
-    def __init()__(self, name, blacklist):
+    def __init()__(self, name, action_type, blacklist):
         self.name = name
+        self.action_type = action_type
         self.blacklist = blacklist
+
+    def __str()__():
+        print(action_type + " " + name)
 
     def set_time_goal(goal, duration):
         self.goal_time = goal
