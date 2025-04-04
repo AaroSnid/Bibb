@@ -44,5 +44,5 @@ deactivate
 ### Install dependencies:
 Run the setup script to install project dependencies:
 ```
-./scripts/setup.sh`
+./scripts/setup.sh
 ```
