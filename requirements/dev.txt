@@ -18,6 +18,12 @@ platformdirs==4.3.6
     # via virtualenv
 pre-commit==3.5.0
     # via -r requirements/dev.in
+pyqt5==5.15.11
+    # via -r requirements/dev.in
+pyqt5-qt5==5.15.16
+    # via pyqt5
+pyqt5-sip==12.15.0
+    # via pyqt5
 pyyaml==6.0.2
     # via pre-commit
 virtualenv==20.30.0
