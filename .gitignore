@@ -11,3 +11,4 @@ env/
 # Build
 build/
 *.log
+token.json
