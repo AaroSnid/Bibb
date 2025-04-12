@@ -1,15 +1,13 @@
-import datetime
 import os.path
 
 from abc import ABC
-from datetime import datetime, timezone
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-'''Only used as a parent for easy access to methods.'''
 class Calendar(ABC):
+    """Only used as a parent for easy access to methods."""
 
     def __init__(self):
         self.credentials = None
@@ -17,14 +15,16 @@ class Calendar(ABC):
     def get_credentials(self):
         pass
 
-    def create_event(self):
+    def create_event(self, event_details:dict):
         pass
 
-'''For users that configure for Google Calendar'''
 class GoogleCalendar(Calendar):
+    """For users that configure for Google Calendar"""
 
     def get_credentials(self):
-        #The base code for this function comes from the Python Quickstart at https://developers.google.com/workspace/calendar/api/quickstart/python, published under Apatche 2.0 license
+        """The base code for this function comes from the Python Quickstart at
+        https://developers.google.com/workspace/calendar/api/quickstart/python,
+        published under Apache 2.0 license"""
         scope = ["https://www.googleapis.com/auth/calendar"]
 
         # The file token.json stores the user's access and refresh tokens, and is
@@ -45,20 +45,20 @@ class GoogleCalendar(Calendar):
                 token.write(self.credentials.to_json())
 
     #Creates an event based on the dict event_details
-    def create_event(self, event_details):
+    def create_event(self, event_details:dict):
         service = build("calendar", "v3", credentials=self.credentials)
 
         event = {
             'summary': event_details['summary'],
             'description': event_details['description'],
-        'start': {
-            'dateTime': event_details['start'],
-            'timeZone': 'UTC',
-        },
-        'end': {
-            'dateTime': event_details['end'],
-            'timeZone': 'UTC',
-        },
+            'start': {
+                'dateTime': event_details['start'],
+                'timeZone': 'UTC',
+            },
+            'end': {
+                'dateTime': event_details['end'],
+                'timeZone': 'UTC',
+            },
         }
 
         event = service.events().insert(calendarId='primary', body=event).execute()
