@@ -1,4 +1,5 @@
 import os.path
+import datetime
 
 from abc import ABC
 from google.auth.transport.requests import Request
@@ -13,6 +14,9 @@ class Calendar(ABC):
         self.credentials = None
 
     def get_credentials(self):
+        pass
+
+    def get_event(self, amount : int) -> list:
         pass
 
     def create_event(self, event_details:dict):
@@ -44,8 +48,29 @@ class GoogleCalendar(Calendar):
             with open("token.json", "w") as token:
                 token.write(self.credentials.to_json())
 
-    #Creates an event based on the dict event_details
+    def get_event(self, amount : int) -> list:
+        """Gets the next {amount} events in the users calendar"""
+
+        service = build("calendar", "v3", credentials=self.credentials)
+
+        now = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
+        events_result = (
+            service.events()
+            .list(
+                calendarId="primary",
+                timeMin=now,
+                maxResults=amount,
+                singleEvents=True,
+                orderBy="startTime",
+            )
+            .execute()
+        )
+        events = events_result.get("items", [])
+        return events
+
     def create_event(self, event_details:dict):
+        """Creates an event based on the dict event_details"""
+
         service = build("calendar", "v3", credentials=self.credentials)
 
         event = {
