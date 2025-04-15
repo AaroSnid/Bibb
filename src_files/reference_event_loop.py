@@ -2,13 +2,12 @@
 iteration of the implementation of the main event loop"""
 
 import calendars
-import time_tracking
 import events
 
 from datetime import datetime, timezone
 import time
 
-def event_loop(event : events.Event, user_calendar : calendars.Calendar) -> int:
+def event_loop(event : events.Topic, user_calendar : calendars.Calendar) -> int:
     """This will be run whenever a session is begun"""
 
     initial_time = time.time()
