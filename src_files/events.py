@@ -1,10 +1,14 @@
+"""Logic for managing event creation and description."""
+
 import time
-import win32gui
+import win32gui # pylint: disable=import-error
 from datetime import datetime, timezone
-from pywin32 import win32con
+from pywin32 import win32con # pylint: disable=import-error
 
 class Topic:
-    """This is to designate different "tasks" or study topics. Definitely adding more variables and methods."""
+    """This is to designate different "tasks" or study topics.
+
+    Definitely adding more variables and methods."""
 
     def __init__(self, name: str, action_type: str, whitelist: set, **kwargs):
         self.name = name  # e.g. “Calculus”
@@ -23,17 +27,17 @@ class Topic:
             self.whitelist = None
             self.time_spent = None
 
-    # This will probably never be run
     def __str__(self):
+        """This will probably never be run."""
         return self.action_type + " " + self.name
 
-    # Sets a time spent goal per period, e.g. 5h/week
     def set_time_goal(self, time_goal: float, duration):
+        """Sets a time spent goal per period, e.g. 5h/week."""
         self.goal_time = time_goal
         self.goal_period = duration
 
-    # Adds/Removes an item to/from the application whitelist
     def update_whitelist(self, item: str, state: str):
+        """Adds/Removes an item to/from the application whitelist"""
         if "remove" in state:
             self.whitelist.remove(item)
         elif "add" in state:
@@ -52,34 +56,34 @@ class Event:
         self.paused_time = 0
         self.temp_time = 0
 
-    #First of function call pair
     def pause_time(self):
+        """First of time stop function call pair"""
         self.temp_time = time.time()
 
-    #Second of functino call pair
     def unpause_time(self):
+        """Second of time stop function call pair"""
         self.paused_time = time.time() - self.temp_time
 
-    #Allows a description entry addition
     def set_description(self, *args):
+        """Used to add a description for the event"""
         if args:
             self.description = args[0]
         else:
             self.description = input()
 
-    #Returns total time. Is a function since value is always changing
     def get_total_time(self):
+        """Returns total time. Is a function since value is always changing"""
         return self.initial_time - self.paused_time
 
-    # Called when user is not on topic, and used to select action
     def on_topic_reminder(self):
+        """Called when user is not on topic, and used to select action."""
         window = get_window_name()
 
-        #Lacks validation since this will be replaced with GUI
+        # Lacks validation since this will be replaced with GUI
         print(f"\n Shouldn't you be {self.summary} right now? \n")
         user_input = int(input("1: Add to whitelist \n 2: Exit \n"))
 
-        #Again, no validation here.
+        # Again, no validation here.
         if user_input == 1:
             self.topic.update_whitelist(window, "add")
         elif user_input == 2:
@@ -87,5 +91,6 @@ class Event:
 
 
 def get_window_name():
+    """Returns the name of the window that the user is on."""
     window = win32gui.GetForegroundWindow()
     return win32gui.GetWindowText(window)

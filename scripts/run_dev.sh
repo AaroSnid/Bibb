@@ -9,4 +9,4 @@ PROJECT_DIR="$(pwd)"
 # Change the qt platform for wsl.
 export QT_QPA_PLATFORM=xcb
 
-python "$PROJECT_DIR/bibb/app.py"
+python "$PROJECT_DIR/src_files/bibb.py"

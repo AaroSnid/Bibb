@@ -1,7 +1,9 @@
-import os.path
-import datetime
+"""Logic for interacting with calendar APIs."""
 
+import datetime
+import os.path
 from abc import ABC
+
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -16,13 +18,14 @@ class Calendar(ABC):
         self.credentials = None
 
     def get_credentials(self):
-        pass
+        """Authenticate the application to access calendar data on behalf of the user."""
 
-    def get_events(self, amount : int) -> list:
-        pass
+    def get_events(self, amount: int) -> list:
+        """Fetches events from the calendar api."""
 
-    def create_event(self, event_details:dict):
-        pass
+    def create_event(self, event_details: dict):
+        """Makes a request to the calendar API to create an event."""
+
 
 class GoogleCalendar(Calendar):
     """For users that configure for Google Calendar"""
@@ -47,7 +50,7 @@ class GoogleCalendar(Calendar):
                 self.credentials = flow.run_local_server(port=0)
 
             # Save the credentials for the next run
-            with open("token.json", "w") as token:
+            with open("token.json", "w", encoding="utf-8") as token:
                 token.write(self.credentials.to_json())
 
     def get_events(self, amount : int) -> list:
@@ -57,7 +60,7 @@ class GoogleCalendar(Calendar):
 
         now = datetime.datetime.now(tz=datetime.timezone.utc).isoformat()
         events_result = (
-            service.events()
+            service.events()  # pylint: disable=no-member
             .list(
                 calendarId="primary",
                 timeMin=now,
@@ -70,25 +73,25 @@ class GoogleCalendar(Calendar):
         events = events_result.get("items", [])
         return events
 
-    def create_event(self, event_details:dict):
+    def create_event(self, event_details: dict):
         """Creates an event based on the dict event_details"""
 
         service = build("calendar", "v3", credentials=self.credentials)
 
         event = {
-            'summary': event_details['summary'],
-            'description': event_details['description'],
-            'start': {
-                'dateTime': event_details['start'],
-                'timeZone': 'UTC',
+            "summary": event_details["summary"],
+            "description": event_details["description"],
+            "start": {
+                "dateTime": event_details["start"],
+                "timeZone": "UTC",
             },
-            'end': {
-                'dateTime': event_details['end'],
-                'timeZone': 'UTC',
+            "end": {
+                "dateTime": event_details["end"],
+                "timeZone": "UTC",
             },
         }
-
-        event = service.events().insert(calendarId='primary', body=event).execute()
+        # pylint: disable=no-member
+        event = service.events().insert(calendarId="primary", body=event).execute()
 
 class OutlookCalendar(Calendar):
     """For users that configure for Outlook Calendar"""

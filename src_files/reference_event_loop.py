@@ -1,21 +1,20 @@
 """This file is for reference only, as it contains an early
 iteration of the implementation of the main event loop"""
 
-import calendars
-import events
-
-from datetime import datetime, timezone
 import time
+from datetime import datetime, timezone
 
-def event_loop(event : events.Topic, user_calendar : calendars.Calendar) -> int:
+from src_files.calendars import Calendar
+from src_files.events import Topic
+from src_files.time_tracking import get_window_name, on_topic_reminder
+
+def event_loop(event: Topic, user_calendar: Calendar) -> int:
     """This will be run whenever a session is begun"""
 
     initial_time = time.time()
     event_details = {
-        "start": {
-            "datetime": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-        },
-        "summary": f"{event.action_type} {event.name}"
+        "start": {"datetime": datetime.now(timezone.utc).replace(microsecond=0).isoformat()},
+        "summary": f"{event.action_type} {event.name}",
     }
     paused_time = 0
     time_elapsed = 0
@@ -27,22 +26,26 @@ def event_loop(event : events.Topic, user_calendar : calendars.Calendar) -> int:
     while event_running:
 
         # Checks to make sure the user is on topic
-        window = time_tracking.get_window_name()
+        window = get_window_name()
         if window not in event.whitelist:
             temp_time = time.time()
-            time_tracking.on_topic_reminder(event)
-            paused_time += (time.time() - temp_time)
+            on_topic_reminder(event)
+            paused_time += time.time() - temp_time
 
         # Calculates elapsed time, can be displayed to user
         time_elapsed = initial_time - paused_time
 
     # After the main event loop ends
-    event_details.update({'end': {'dateTime': datetime.now(timezone.utc).replace(microsecond=0).isoformat()}})
+    event_details.update(
+        {"end": {"dateTime": datetime.now(timezone.utc).replace(microsecond=0).isoformat()}}
+    )
 
     # Ask user if they want to add a description.
-    desc = input("Type a description for your event, e.g. subjects studied. Press enter for no description\n")
+    desc = input(
+        "Type a description for your event, e.g. subjects studied. Press enter for no description\n"
+    )
     if desc:
-        event_details.update({'description': desc})
+        event_details.update({"description": desc})
 
     user_calendar.create_event(event_details)
     return time_elapsed
