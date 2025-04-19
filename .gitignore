@@ -12,3 +12,4 @@ env/
 build/
 *.log
 token.json
+__pycache__/
