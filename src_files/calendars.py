@@ -6,6 +6,8 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+from O365 import Account, FileSystemTokenBackend
+
 
 class Calendar(ABC):
     """Only used as a parent for easy access to methods."""
@@ -16,7 +18,7 @@ class Calendar(ABC):
     def get_credentials(self):
         pass
 
-    def get_event(self, amount : int) -> list:
+    def get_events(self, amount : int) -> list:
         pass
 
     def create_event(self, event_details:dict):
@@ -48,7 +50,7 @@ class GoogleCalendar(Calendar):
             with open("token.json", "w") as token:
                 token.write(self.credentials.to_json())
 
-    def get_event(self, amount : int) -> list:
+    def get_events(self, amount : int) -> list:
         """Gets the next {amount} events in the users calendar"""
 
         service = build("calendar", "v3", credentials=self.credentials)
@@ -87,3 +89,55 @@ class GoogleCalendar(Calendar):
         }
 
         event = service.events().insert(calendarId='primary', body=event).execute()
+
+class OutlookCalendar(Calendar):
+    """For users that configure for Outlook Calendar"""
+
+    def get_credentials(self):
+
+        # Defines the API credentials, and sets up automatic token reading/refresh
+        api_credentials = ('286c9124-1061-4b2c-afe0-20ee80d9301d', '')
+        token_backend = FileSystemTokenBackend(token_path='.', token_filename='o365_token.txt')
+
+        # Passes relevant credentials, and attempts to authenticate with the token.
+        account = Account(api_credentials, token_backend=token_backend)
+
+        # Prompts authentication if token auth was unsuccessful
+        if not account.is_authenticated:
+            account.authenticate(scopes=['basic', 'calendar_all'])
+
+        self.credentials = account
+
+    def get_events(self, amount : int) -> list:
+        # Get the calendar and schedule
+        schedule = self.credentials.schedule()
+        calendar = schedule.get_default_calendar()
+
+        # Required to define a time range, 30 days should be enough
+        start = datetime.datetime.now()
+        end = start + datetime.timedelta(days=30)
+
+        # Get events in that time range
+        query = calendar.new_query('start').greater_equal(start)
+        query.chain('and').on_attribute('end').less_equal(end)
+
+        return calendar.get_events(query=query, limit=amount)
+
+    def create_event(self, event_details:dict):
+
+        # Sets the calendar that the event will be created in
+        # Could be updated to allow user to select a specific calendar
+        schedule = self.credentials.schedule()
+        calendar = schedule.get_default_calendar()
+
+        # Create a new event
+        event = calendar.new_event()
+
+        # Set the event parameters
+        event.subject = event_details['summary']
+        event.body = event_details['description']
+        event.start = datetime.datetime.fromisoformat(event_details['start'])
+        event.end = datetime.datetime.fromisoformat(event_details['end'])
+
+        # Creates the event in the users calendar
+        event.save()
